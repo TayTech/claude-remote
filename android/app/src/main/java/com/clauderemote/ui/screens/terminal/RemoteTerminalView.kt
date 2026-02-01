@@ -353,33 +353,41 @@ class RemoteTerminalView @JvmOverloads constructor(
             textPaint.isFakeBoldText = false
         }
 
+        // Draw cursor only if we're at the bottom (not scrolled up)
+        val maxScrollY = max(0, (totalRows - visibleRows) * fontLineSpacing)
+        val isAtBottom = scrollYPixels >= maxScrollY - fontLineSpacing
+
         // Draw cursor on the prompt line (line starting with ">")
         // Position it right after the ">" character
-        if (lastPromptRow >= 0) {
+        if (lastPromptRow >= 0 && isAtBottom) {
             // Get the text on the prompt line to calculate cursor position
             val emulatorRow = topRow + lastPromptRow
             val promptLineText = try {
                 screen.getSelectedText(0, emulatorRow, visibleCols - 1, emulatorRow) ?: ""
             } catch (e: Exception) { "" }
 
-            // Cursor at the end of the text (after last non-space character)
-            val cursorCol = promptLineText.trimEnd().length
-            var cursorX = cursorCol * fontWidth
-            val cursorY = lastPromptRow * fontLineSpacing - pixelOffset
+            // Don't show cursor if line has more than 2 consecutive spaces
+            val hasConsecutiveSpaces = promptLineText.contains("   ")
 
-            // Draw cursor block with light gray color
-            if(isPromptReset) {
-                textPaint.color = 0x55FFFFFF.toInt()
-                cursorX = (2 * fontWidth) - 3
+            if (!hasConsecutiveSpaces) {
+                // Cursor at the end of the text (after last non-space character)
+                val cursorCol = promptLineText.trimEnd().length
+                var cursorX = cursorCol * fontWidth
+                val cursorY = lastPromptRow * fontLineSpacing - pixelOffset
+
+                // Draw cursor block with light gray color
+                if (isPromptReset) {
+                    textPaint.color = 0x55FFFFFF.toInt()
+                    cursorX = (2 * fontWidth) - 3
+                }
+                canvas.drawRect(
+                    cursorX,
+                    cursorY.toFloat(),
+                    cursorX + fontWidth,
+                    (cursorY + fontLineSpacing).toFloat(),
+                    textPaint
+                )
             }
-            // canvas.drawText("TXT: "+isPromptReset, 0f, ((em.cursorRow - topRow) * fontLineSpacing).toFloat() , textPaint)
-            canvas.drawRect(
-                cursorX,
-                cursorY.toFloat(),
-                cursorX + fontWidth,
-                (cursorY + fontLineSpacing).toFloat(),
-                textPaint
-            )
         }
     }
 
