@@ -10,6 +10,7 @@
     <string name="settings_port_label">Porta</string>
     <string name="settings_test_connection">Testa Connessione</string>
     <string name="settings_save">Salva</string>
+    <string name="settings_cancel">Annulla</string>
 
     <!-- Connection Status -->
     <string name="connection_success">Connessione riuscita</string>

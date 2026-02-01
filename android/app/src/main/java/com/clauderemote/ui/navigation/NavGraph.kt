@@ -57,6 +57,9 @@ fun ClaudeRemoteNavGraph() {
                     navController.navigate(Routes.PROJECTS) {
                         popUpTo(Routes.SETTINGS) { inclusive = true }
                     }
+                },
+                onCancel = {
+                    navController.popBackStack()
                 }
             )
         }
