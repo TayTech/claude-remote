@@ -1,0 +1,56 @@
+# Project-specific excludes (keep only android, backend, README, LICENSE)
+_bmad/
+.claude/
+.cursor/
+agent-output/
+PRD_*.md
+
+# Dependencies
+node_modules/
+.gradle/
+
+# Build
+backend/dist/
+build/
+*.apk
+*.aab
+
+# Environment
+.env
+*.local
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime data (keep template but ignore actual)
+backend/data/projects.json
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+android/captures/
+android/local.properties
+android/*.iml
+
+# Node
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary
+*.tmp
+*.temp
+*.swp
+*~
+
+# BMAD output (keep structure, ignore generated)
+agent-output/planning-artifacts/*
+!agent-output/planning-artifacts/.gitkeep

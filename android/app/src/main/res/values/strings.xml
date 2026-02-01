@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Claude Remote</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Impostazioni</string>
+    <string name="settings_server_section">Configurazione Server</string>
+    <string name="settings_host_label">Indirizzo Tailscale</string>
+    <string name="settings_host_hint">Hostname Tailscale del tuo Mac</string>
+    <string name="settings_port_label">Porta</string>
+    <string name="settings_test_connection">Testa Connessione</string>
+    <string name="settings_save">Salva</string>
+
+    <!-- Connection Status -->
+    <string name="connection_success">Connessione riuscita</string>
+    <string name="connection_failed">Connessione fallita</string>
+    <string name="connecting">Connessione in corso...</string>
+    <string name="connected">Connesso</string>
+    <string name="disconnected">Disconnesso</string>
+    <string name="reconnecting">Riconnessione in corso (tentativo %1$d)...</string>
+
+    <!-- Projects -->
+    <string name="projects_title">Progetti</string>
+    <string name="projects_empty">Nessun progetto configurato</string>
+    <string name="projects_loading">Caricamento progetti...</string>
+    <string name="projects_error">Errore nel caricamento dei progetti</string>
+    <string name="dev_server_port">Porta dev: %1$d</string>
+
+    <!-- Sessions -->
+    <string name="sessions_title">Sessioni</string>
+    <string name="sessions_empty">Nessuna sessione trovata</string>
+    <string name="sessions_loading">Caricamento sessioni...</string>
+    <string name="sessions_error">Errore nel caricamento delle sessioni</string>
+    <string name="sessions_new">Nuova Sessione</string>
+    <string name="messages_count">%1$d messaggi</string>
+
+    <!-- Terminal -->
+    <string name="terminal_title">Terminale</string>
+    <string name="terminal_input_hint">Scrivi un comando...</string>
+    <string name="terminal_send">Invia</string>
+    <string name="terminal_browser">Browser</string>
+    <string name="terminal_back">Indietro</string>
+    <string name="terminal_new_session">Nuova sessione</string>
+
+    <!-- Errors -->
+    <string name="error_session_not_found">Sessione non trovata</string>
+    <string name="error_command_failed">Comando fallito</string>
+    <string name="error_timeout">Timeout della richiesta</string>
+    <string name="error_cancelled">Comando annullato</string>
+    <string name="error_server_not_configured">Server non configurato</string>
+    <string name="error_not_connected">Non connesso al server</string>
+    <string name="error_generic">Si e\' verificato un errore</string>
+
+    <!-- Service -->
+    <string name="service_channel_name">Connessione Claude Remote</string>
+    <string name="service_notification_title">Claude Remote</string>
+    <string name="service_connected_to">Connesso a %1$s</string>
+    <string name="service_disconnected">Disconnesso</string>
+    <string name="service_reconnecting">Riconnessione...</string>
+    <string name="service_disconnect_action">Disconnetti</string>
+</resources>
