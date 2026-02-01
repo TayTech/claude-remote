@@ -89,7 +89,7 @@ registerSocketHandlers(io);
 loadProjects().then(() => {
   httpServer.listen(config.port, '0.0.0.0', () => {
     const host = hostname();
-    console.log(`Claude Remote Backend running on port ${config.port}`);
+    console.log(`RemoteCli for Claude - Backend running on port ${config.port}`);
     displayQRCode(host, config.port);
   });
 }).catch((err) => {

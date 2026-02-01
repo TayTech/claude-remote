@@ -50,10 +50,10 @@ data class ConnectionConfig(
 
 /**
  * Parse the QR code content.
- * Expected format: claude-remote://host:port/apiKey
+ * Expected format: remotecli://host:port/apiKey
  */
 fun parseQRCode(content: String): ConnectionConfig? {
-    val regex = Regex("""^claude-remote://([^:]+):(\d+)/(.+)$""")
+    val regex = Regex("""^remotecli://([^:]+):(\d+)/(.+)$""")
     val match = regex.matchEntire(content) ?: return null
 
     return try {
@@ -75,7 +75,7 @@ fun QRScannerScreen(
     onCancel: () -> Unit
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    // val lifecycleOwner = LocalLifecycleOwner.current
 
     var hasCameraPermission by remember { mutableStateOf(false) }
     var scannedConfig by remember { mutableStateOf<ConnectionConfig?>(null) }
@@ -187,7 +187,7 @@ fun CameraPreview(
                                         if (barcode.valueType == Barcode.TYPE_TEXT ||
                                             barcode.valueType == Barcode.TYPE_URL) {
                                             barcode.rawValue?.let { value ->
-                                                if (value.startsWith("claude-remote://")) {
+                                                if (value.startsWith("remotecli://")) {
                                                     Log.d(TAG, "QR Code scanned: $value")
                                                     onQRCodeScanned(value)
                                                 }

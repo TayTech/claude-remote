@@ -59,8 +59,8 @@ export function validateApiKey(key: string | undefined): boolean {
  */
 export function displayQRCode(host: string, port: number): void {
   const apiKey = getApiKey();
-  // Format: claude-remote://host:port/apiKey
-  const connectionString = `claude-remote://${host}:${port}/${apiKey}`;
+  // Format: remotecli://host:port/apiKey
+  const connectionString = `remotecli://${host}:${port}/${apiKey}`;
 
   console.log('\n========================================');
   console.log('Scan this QR code with RemoteCli for Claude app:');

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Claude Remote</string>
+    <string name="app_name">RemoteCli for Claude</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -60,8 +60,8 @@
     <string name="error_generic">An error occurred</string>
 
     <!-- Service -->
-    <string name="service_channel_name">Claude Remote Connection</string>
-    <string name="service_notification_title">Claude Remote</string>
+    <string name="service_channel_name">RemoteCli Connection</string>
+    <string name="service_notification_title">RemoteCli for Claude</string>
     <string name="service_connected_to">Connected to %1$s</string>
     <string name="service_disconnected">Disconnected</string>
     <string name="service_reconnecting">Reconnecting...</string>

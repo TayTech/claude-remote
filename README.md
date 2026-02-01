@@ -1,8 +1,10 @@
-# Claude Remote
+# RemoteCli for Claude
+
+> **Disclaimer**: This is an UNOFFICIAL third-party client and is NOT affiliated with, endorsed by, or sponsored by Anthropic, PBC. "Claude" and "Claude Code" are trademarks of Anthropic, PBC. This application is provided for personal, non-commercial use only.
 
 Android client for Claude Code CLI - control your AI coding assistant remotely via Tailscale.
 
-Claude Remote lets you interact with Claude Code CLI from your Android device. The backend runs on your Mac/PC where Claude CLI is installed, while the Android app connects securely via Tailscale. Features include a real-time terminal emulator, project selection, QR code pairing, and full keyboard support for mobile-friendly AI-assisted coding on the go.
+RemoteCli for Claude lets you interact with Claude Code CLI from your Android device. The backend runs on your Mac/PC where Claude CLI is installed, while the Android app connects securely via Tailscale. Features include a real-time terminal emulator, project selection, QR code pairing, and full keyboard support for mobile-friendly AI-assisted coding on the go.
 
 ## Architecture
 
@@ -83,7 +85,7 @@ That's it! You're connected.
 
 ## Authentication
 
-Claude Remote uses API key authentication to secure all connections:
+RemoteCli for Claude uses API key authentication to secure all connections:
 
 - **API Key File**: Generated automatically on first backend startup
 - **Location**: `backend/.remote-cli-key`
@@ -235,7 +237,7 @@ The terminal screen includes a control bar with special keys for mobile-friendly
 
 ## Security
 
-Claude Remote implements several security measures:
+RemoteCli for Claude implements several security measures:
 
 - **API Key Authentication**: All requests require a valid API key
 - **Rate Limiting**: 100 requests per minute per IP
