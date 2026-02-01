@@ -24,6 +24,13 @@ class RemoteTerminalSession(
 
     companion object {
         private const val TAG = "RemoteTerminalSession"
+
+        // Precompiled regex patterns for filtering unsupported escape sequences
+        private val EXTENDED_MOUSE_MODE = Regex("\u001B\\[<u")
+        private val SYNCHRONIZED_UPDATE = Regex("\u001B\\[\\?2026[hl]")
+        private val ITERM2_PROPRIETARY = Regex("\u001B]9;[^\u0007]*\u0007")
+        private val KITTY_KEYBOARD_GT = Regex("\u001B\\[>u")
+        private val KITTY_KEYBOARD_LT = Regex("\u001B\\[<[0-9;]*u")
     }
 
     val emulator: TerminalEmulator
@@ -67,17 +74,17 @@ class RemoteTerminalSession(
 
         // Extended mouse mode sequences (CSI < ... ) - renders as "uu" or similar
         // Pattern: ESC [ < followed by various commands including 'u'
-        result = result.replace(Regex("\u001B\\[<u"), "")
+        result = result.replace(EXTENDED_MOUSE_MODE, "")
 
         // Synchronized update mode (not widely supported)
-        result = result.replace(Regex("\u001B\\[\\?2026[hl]"), "")
+        result = result.replace(SYNCHRONIZED_UPDATE, "")
 
         // iTerm2 proprietary sequences (OSC 9)
-        result = result.replace(Regex("\u001B]9;[^\u0007]*\u0007"), "")
+        result = result.replace(ITERM2_PROPRIETARY, "")
 
         // Kitty keyboard protocol (CSI > u and CSI < u)
-        result = result.replace(Regex("\u001B\\[>u"), "")
-        result = result.replace(Regex("\u001B\\[<[0-9;]*u"), "")
+        result = result.replace(KITTY_KEYBOARD_GT, "")
+        result = result.replace(KITTY_KEYBOARD_LT, "")
 
         return result
     }

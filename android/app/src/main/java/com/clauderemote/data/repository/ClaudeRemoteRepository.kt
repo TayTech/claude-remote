@@ -28,7 +28,8 @@ import javax.inject.Inject
 
 data class ServerSettings(
     val host: String,
-    val port: Int
+    val port: Int,
+    val apiKey: String
 )
 
 class ClaudeRemoteRepository @Inject constructor(
@@ -39,9 +40,10 @@ class ClaudeRemoteRepository @Inject constructor(
     companion object {
         private val KEY_HOST = stringPreferencesKey("server_host")
         private val KEY_PORT = intPreferencesKey("server_port")
+        private val KEY_API_KEY = stringPreferencesKey("api_key")
         private val KEY_LAST_PROJECT_ID = stringPreferencesKey("last_project_id")
 
-        const val DEFAULT_PORT = 3000
+        const val DEFAULT_PORT = 3190
         const val ERROR_SERVER_NOT_CONFIGURED = "Server not configured"
     }
 
@@ -49,7 +51,8 @@ class ClaudeRemoteRepository @Inject constructor(
     val serverSettings: Flow<ServerSettings?> = dataStore.data.map { prefs ->
         val host = prefs[KEY_HOST]
         val port = prefs[KEY_PORT] ?: DEFAULT_PORT
-        if (host != null) ServerSettings(host, port) else null
+        val apiKey = prefs[KEY_API_KEY] ?: ""
+        if (host != null && apiKey.isNotEmpty()) ServerSettings(host, port, apiKey) else null
     }
 
     val lastProjectId: Flow<String?> = dataStore.data.map { prefs ->
@@ -65,10 +68,11 @@ class ClaudeRemoteRepository @Inject constructor(
     val commandError: SharedFlow<CommandError> = socketService.commandError
 
     // Settings management
-    suspend fun saveServerSettings(host: String, port: Int) {
+    suspend fun saveServerSettings(host: String, port: Int, apiKey: String) {
         dataStore.edit { prefs ->
             prefs[KEY_HOST] = host
             prefs[KEY_PORT] = port
+            prefs[KEY_API_KEY] = apiKey
         }
     }
 
@@ -83,8 +87,8 @@ class ClaudeRemoteRepository @Inject constructor(
     }
 
     // API calls
-    suspend fun testConnection(host: String, port: Int): Result<HealthResponse> {
-        apiService.setBaseUrl(host, port)
+    suspend fun testConnection(host: String, port: Int, apiKey: String): Result<HealthResponse> {
+        apiService.setBaseUrl(host, port, apiKey)
         return apiService.getHealth()
     }
 
@@ -92,7 +96,7 @@ class ClaudeRemoteRepository @Inject constructor(
         val settings = getServerSettings()
             ?: return Result.failure(Exception(ERROR_SERVER_NOT_CONFIGURED))
 
-        apiService.setBaseUrl(settings.host, settings.port)
+        apiService.setBaseUrl(settings.host, settings.port, settings.apiKey)
         return apiService.getProjects()
     }
 
@@ -100,7 +104,7 @@ class ClaudeRemoteRepository @Inject constructor(
         val settings = getServerSettings()
             ?: return Result.failure(Exception(ERROR_SERVER_NOT_CONFIGURED))
 
-        apiService.setBaseUrl(settings.host, settings.port)
+        apiService.setBaseUrl(settings.host, settings.port, settings.apiKey)
         return apiService.getSessions(projectId)
     }
 
@@ -108,14 +112,14 @@ class ClaudeRemoteRepository @Inject constructor(
         val settings = getServerSettings()
             ?: return Result.failure(Exception(ERROR_SERVER_NOT_CONFIGURED))
 
-        apiService.setBaseUrl(settings.host, settings.port)
+        apiService.setBaseUrl(settings.host, settings.port, settings.apiKey)
         return apiService.getSessionHistory(projectId, sessionId)
     }
 
     // Socket management
     suspend fun connect() {
         val settings = getServerSettings() ?: return
-        socketService.connect(settings.host, settings.port)
+        socketService.connect(settings.host, settings.port, settings.apiKey)
     }
 
     fun disconnect() {

@@ -51,6 +51,7 @@ class SocketService @Inject constructor() {
     @Volatile private var socket: Socket? = null
     @Volatile private var currentHost: String? = null
     @Volatile private var currentPort: Int? = null
+    @Volatile private var currentApiKey: String? = null
     @Volatile private var reconnectAttempt = 0
 
     private val lock = Any()
@@ -69,15 +70,16 @@ class SocketService @Inject constructor() {
 
     private val pendingAcks = mutableMapOf<String, (SendCommandAck) -> Unit>()
 
-    fun connect(host: String, port: Int) {
+    fun connect(host: String, port: Int, apiKey: String) {
         synchronized(lock) {
-            if (socket?.connected() == true && host == currentHost && port == currentPort) {
+            if (socket?.connected() == true && host == currentHost && port == currentPort && apiKey == currentApiKey) {
                 return
             }
 
             disconnect()
             currentHost = host
             currentPort = port
+            currentApiKey = apiKey
             reconnectAttempt = 0
             // Recreate scope after disconnect cancelled it
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -89,6 +91,7 @@ class SocketService @Inject constructor() {
     private fun doConnect() {
         val host = currentHost ?: return
         val port = currentPort ?: return
+        val apiKey = currentApiKey ?: return
 
         try {
             _connectionState.value = ConnectionState.Connecting
@@ -99,6 +102,7 @@ class SocketService @Inject constructor() {
                 reconnection = false // We handle reconnection manually
                 timeout = 10000
                 transports = arrayOf("websocket")
+                auth = mapOf("apiKey" to apiKey)
             }
 
             socket = IO.socket("http://$host:$port", options).apply {

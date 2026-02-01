@@ -95,6 +95,15 @@ dependencies {
     // Termux terminal emulator (terminal-emulator is a transitive dependency of terminal-view)
     implementation(libs.termux.terminal.view)
 
+    // CameraX for QR scanning
+    implementation(libs.camerax.core)
+    implementation(libs.camerax.camera2)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
+
+    // ML Kit Barcode Scanning
+    implementation(libs.mlkit.barcode.scanning)
+
     // Debug
     debugImplementation(libs.androidx.ui.tooling)
 }

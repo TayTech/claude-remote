@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, existsSync, statSync } from 'fs';
+import { readdir, readFile, stat, access } from 'fs/promises';
 import { join, basename } from 'path';
 import { config } from '../config.js';
 import type { Project, SessionsIndex } from '../types/index.js';
@@ -8,13 +8,25 @@ let lastScanTime: number = 0;
 const CACHE_TTL_MS = 30000; // 30 seconds cache
 
 /**
+ * Check if a path exists (async).
+ */
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Scan ~/.claude/projects/ directory and discover all Claude projects.
  * Projects are identified by folders containing sessions-index.json.
  */
-export function loadProjects(): Project[] {
+export async function loadProjects(): Promise<Project[]> {
   const claudeProjectsPath = config.claudeProjectsPath;
 
-  if (!existsSync(claudeProjectsPath)) {
+  if (!(await pathExists(claudeProjectsPath))) {
     console.warn(`Claude projects path not found: ${claudeProjectsPath}`);
     return [];
   }
@@ -22,7 +34,7 @@ export function loadProjects(): Project[] {
   const projects: Project[] = [];
 
   try {
-    const entries = readdirSync(claudeProjectsPath);
+    const entries = await readdir(claudeProjectsPath);
 
     for (const entry of entries) {
       // Skip hidden files and special entries
@@ -32,17 +44,18 @@ export function loadProjects(): Project[] {
 
       // Check if it's a directory
       try {
-        if (!statSync(projectDir).isDirectory()) continue;
+        const stats = await stat(projectDir);
+        if (!stats.isDirectory()) continue;
       } catch {
         continue;
       }
 
       // Check for sessions-index.json
       const sessionsIndexPath = join(projectDir, 'sessions-index.json');
-      if (!existsSync(sessionsIndexPath)) continue;
+      if (!(await pathExists(sessionsIndexPath))) continue;
 
       try {
-        const indexData = readFileSync(sessionsIndexPath, 'utf-8');
+        const indexData = await readFile(sessionsIndexPath, 'utf-8');
         const sessionsIndex: SessionsIndex = JSON.parse(indexData);
 
         // Get project path from the first session entry or decode from folder name
@@ -55,7 +68,7 @@ export function loadProjects(): Project[] {
         }
 
         // Verify the project path exists
-        if (!existsSync(projectPath)) {
+        if (!(await pathExists(projectPath))) {
           console.warn(`Project path does not exist: ${projectPath}`);
           continue;
         }
@@ -66,9 +79,9 @@ export function loadProjects(): Project[] {
         // Try to detect dev server port from package.json
         let devServerPort: number | undefined;
         const packageJsonPath = join(projectPath, 'package.json');
-        if (existsSync(packageJsonPath)) {
+        if (await pathExists(packageJsonPath)) {
           try {
-            const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+            const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
             // Common patterns for dev server ports
             if (packageJson.config?.port) {
               devServerPort = parseInt(packageJson.config.port, 10);
@@ -108,7 +121,7 @@ export function loadProjects(): Project[] {
  * List all discovered projects.
  * Uses cache if available and not expired.
  */
-export function listProjects(): Project[] {
+export async function listProjects(): Promise<Project[]> {
   const now = Date.now();
   if (projectsCache !== null && now - lastScanTime < CACHE_TTL_MS) {
     return projectsCache;
@@ -119,15 +132,15 @@ export function listProjects(): Project[] {
 /**
  * Get a specific project by ID.
  */
-export function getProject(id: string): Project | undefined {
-  const projects = listProjects();
+export async function getProject(id: string): Promise<Project | undefined> {
+  const projects = await listProjects();
   return projects.find((p) => p.id === id);
 }
 
 /**
  * Force reload projects from disk.
  */
-export function reloadProjects(): Project[] {
+export async function reloadProjects(): Promise<Project[]> {
   projectsCache = null;
   lastScanTime = 0;
   return loadProjects();
@@ -137,9 +150,9 @@ export function reloadProjects(): Project[] {
  * Add a custom project (not from Claude's directory).
  * Useful for adding projects that haven't been used with Claude CLI yet.
  */
-export function addCustomProject(project: Project): void {
+export async function addCustomProject(project: Project): Promise<void> {
   if (projectsCache === null) {
-    loadProjects();
+    await loadProjects();
   }
 
   // Check if already exists

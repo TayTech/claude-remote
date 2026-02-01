@@ -1,7 +1,19 @@
-import { readFileSync, existsSync } from 'fs';
+import { readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { config } from '../config.js';
 import type { SessionsIndex, Session, SessionEntry } from '../types/index.js';
+
+/**
+ * Check if a path exists (async).
+ */
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function getPathHash(projectPath: string): string {
   return projectPath.replace(/\//g, '-');
@@ -19,17 +31,17 @@ function sessionEntryToSession(entry: SessionEntry): Session {
   };
 }
 
-export function getSessionsForProject(projectPath: string): Session[] {
+export async function getSessionsForProject(projectPath: string): Promise<Session[]> {
   const pathHash = getPathHash(projectPath);
   const indexPath = join(config.claudeProjectsPath, pathHash, 'sessions-index.json');
 
-  if (!existsSync(indexPath)) {
+  if (!(await pathExists(indexPath))) {
     console.warn(`Sessions index not found: ${indexPath}`);
     return [];
   }
 
   try {
-    const data = readFileSync(indexPath, 'utf-8');
+    const data = await readFile(indexPath, 'utf-8');
     const index: SessionsIndex = JSON.parse(data);
 
     // Sort by modified descending (newest first)
@@ -44,13 +56,13 @@ export function getSessionsForProject(projectPath: string): Session[] {
   }
 }
 
-export function refreshSessionsIndex(projectPath: string): Session[] {
+export async function refreshSessionsIndex(projectPath: string): Promise<Session[]> {
   // Simply re-read the file - Claude CLI maintains this automatically
   return getSessionsForProject(projectPath);
 }
 
-export function getSession(projectPath: string, sessionId: string): Session | undefined {
-  const sessions = getSessionsForProject(projectPath);
+export async function getSession(projectPath: string, sessionId: string): Promise<Session | undefined> {
+  const sessions = await getSessionsForProject(projectPath);
   return sessions.find((s) => s.sessionId === sessionId);
 }
 
@@ -60,17 +72,17 @@ export interface HistoryMessage {
   timestamp: string;
 }
 
-export function getSessionHistory(projectPath: string, sessionId: string): HistoryMessage[] {
+export async function getSessionHistory(projectPath: string, sessionId: string): Promise<HistoryMessage[]> {
   const pathHash = getPathHash(projectPath);
   const sessionFile = join(config.claudeProjectsPath, pathHash, `${sessionId}.jsonl`);
 
-  if (!existsSync(sessionFile)) {
+  if (!(await pathExists(sessionFile))) {
     console.warn(`Session file not found: ${sessionFile}`);
     return [];
   }
 
   try {
-    const data = readFileSync(sessionFile, 'utf-8');
+    const data = await readFile(sessionFile, 'utf-8');
     const lines = data.split('\n').filter(line => line.trim());
     const messages: HistoryMessage[] = [];
 

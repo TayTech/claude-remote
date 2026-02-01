@@ -1,5 +1,9 @@
 package com.clauderemote.ui.screens.settings
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,11 +27,17 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.clauderemote.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,10 +47,39 @@ fun SettingsScreen(
     onSettingsSaved: () -> Unit,
     onCancel: () -> Unit
 ) {
+    val context = LocalContext.current
     val host by viewModel.host.collectAsState()
     val port by viewModel.port.collectAsState()
+    val apiKey by viewModel.apiKey.collectAsState()
     val testState by viewModel.testState.collectAsState()
     val saveError by viewModel.saveError.collectAsState()
+
+    var showQRScanner by remember { mutableStateOf(false) }
+
+    // Camera permission launcher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            showQRScanner = true
+        }
+    }
+
+    // Show QR Scanner screen if requested
+    if (showQRScanner) {
+        QRScannerScreen(
+            onConfigScanned = { config ->
+                viewModel.updateHost(config.host)
+                viewModel.updatePort(config.port.toString())
+                viewModel.updateApiKey(config.apiKey)
+                showQRScanner = false
+            },
+            onCancel = {
+                showQRScanner = false
+            }
+        )
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -65,6 +104,27 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.primary
             )
 
+            // Scan QR Code button
+            Button(
+                onClick = {
+                    val hasCameraPermission = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (hasCameraPermission) {
+                        showQRScanner = true
+                    } else {
+                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.settings_scan_qr))
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = host,
                 onValueChange = viewModel::updateHost,
@@ -82,6 +142,16 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+
+            OutlinedTextField(
+                value = apiKey,
+                onValueChange = viewModel::updateApiKey,
+                label = { Text(stringResource(R.string.settings_api_key_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                supportingText = { Text(stringResource(R.string.settings_api_key_hint)) }
             )
 
             Spacer(modifier = Modifier.height(8.dp))

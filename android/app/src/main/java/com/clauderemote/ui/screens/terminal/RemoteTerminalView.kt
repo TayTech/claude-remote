@@ -33,6 +33,9 @@ class RemoteTerminalView @JvmOverloads constructor(
     companion object {
         private const val TAG = "RemoteTerminalView"
         private const val DEFAULT_FONT_SIZE = 28
+        // Color value 0xFFAAAAAA (light gray) in signed int form
+        // Used to detect cursor placeholder rows in Claude CLI output
+        private const val CURSOR_PLACEHOLDER_COLOR = -5592406
     }
 
     // Terminal emulator reference
@@ -57,11 +60,11 @@ class RemoteTerminalView @JvmOverloads constructor(
     private val defaultForeground = 0xFFFFFFFF.toInt()
     private val defaultBackground = 0xFF1E1E1E.toInt()
 
-    // Standard ANSI colors
+    // Standard ANSI 16-color palette (indices 0-15)
     private val colorPalette = intArrayOf(
         0xFF000000.toInt(), // 0: Black
         // 0xFFCD0000.toInt(), // 1: Red
-        0xFF00CD00.toInt(), // 1: Green
+        0xFF00CD00.toInt(), // 1: Red
         0xFF00CD00.toInt(), // 2: Green
         0xFFCDCD00.toInt(), // 3: Yellow
         0xFF0000EE.toInt(), // 4: Blue
@@ -330,7 +333,7 @@ class RemoteTerminalView @JvmOverloads constructor(
                     lineColor = getColorFromPalette(fg)
 
                     // if is cursor placeholder row
-                    if (lineColor == -5592406) {
+                    if (lineColor == CURSOR_PLACEHOLDER_COLOR) {
                         isPromptReset = true
                     }
                 }

@@ -5,12 +5,19 @@
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_server_section">Server Configuration</string>
-    <string name="settings_host_label">Tailscale Address</string>
-    <string name="settings_host_hint">Your Mac\'s Tailscale hostname</string>
+    <string name="settings_host_label">Server Address</string>
+    <string name="settings_host_hint">Hostname or IP address</string>
     <string name="settings_port_label">Port</string>
+    <string name="settings_api_key_label">API Key</string>
+    <string name="settings_api_key_hint">Shown when starting the backend server</string>
     <string name="settings_test_connection">Test Connection</string>
     <string name="settings_save">Save</string>
     <string name="settings_cancel">Cancel</string>
+    <string name="settings_scan_qr">Scan QR Code</string>
+
+    <!-- QR Scanner -->
+    <string name="scan_qr_title">Scan QR Code</string>
+    <string name="camera_permission_required">Camera permission is required to scan QR codes. Please grant camera permission in Settings.</string>
 
     <!-- Connection Status -->
     <string name="connection_success">Connection successful</string>

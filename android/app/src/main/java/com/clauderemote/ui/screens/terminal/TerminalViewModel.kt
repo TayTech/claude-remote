@@ -231,4 +231,12 @@ class TerminalViewModel @Inject constructor(
     fun toggleBrowser() {
         _showBrowser.value = !_showBrowser.value
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d(TAG, "ViewModel cleared, cleaning up terminal session")
+        _terminalSession.value?.finish()
+        _terminalSession.value = null
+        terminalView = null
+    }
 }

@@ -16,10 +16,14 @@ class ApiService @Inject constructor(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
+    @Volatile
     private var baseUrl: String = ""
+    @Volatile
+    private var apiKey: String = ""
 
-    fun setBaseUrl(host: String, port: Int) {
+    fun setBaseUrl(host: String, port: Int, key: String) {
         baseUrl = "http://$host:$port"
+        apiKey = key
     }
 
     suspend fun getHealth(): Result<HealthResponse> = withContext(Dispatchers.IO) {
@@ -29,17 +33,17 @@ class ApiService @Inject constructor(
                 .get()
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
+            okHttpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    return@withContext Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
+                }
 
-            if (!response.isSuccessful) {
-                return@withContext Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
+                val body = response.body?.string()
+                    ?: return@withContext Result.failure(Exception("Empty response body"))
+
+                val health = json.decodeFromString<HealthResponse>(body)
+                Result.success(health)
             }
-
-            val body = response.body?.string()
-                ?: return@withContext Result.failure(Exception("Empty response body"))
-
-            val health = json.decodeFromString<HealthResponse>(body)
-            Result.success(health)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -49,20 +53,21 @@ class ApiService @Inject constructor(
         try {
             val request = Request.Builder()
                 .url("$baseUrl/projects")
+                .header("X-API-Key", apiKey)
                 .get()
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
+            okHttpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    return@withContext Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
+                }
 
-            if (!response.isSuccessful) {
-                return@withContext Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
+                val body = response.body?.string()
+                    ?: return@withContext Result.failure(Exception("Empty response body"))
+
+                val projects = json.decodeFromString<List<Project>>(body)
+                Result.success(projects)
             }
-
-            val body = response.body?.string()
-                ?: return@withContext Result.failure(Exception("Empty response body"))
-
-            val projects = json.decodeFromString<List<Project>>(body)
-            Result.success(projects)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -72,20 +77,21 @@ class ApiService @Inject constructor(
         try {
             val request = Request.Builder()
                 .url("$baseUrl/projects/$projectId/sessions")
+                .header("X-API-Key", apiKey)
                 .get()
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
+            okHttpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    return@withContext Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
+                }
 
-            if (!response.isSuccessful) {
-                return@withContext Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
+                val body = response.body?.string()
+                    ?: return@withContext Result.failure(Exception("Empty response body"))
+
+                val sessions = json.decodeFromString<List<Session>>(body)
+                Result.success(sessions)
             }
-
-            val body = response.body?.string()
-                ?: return@withContext Result.failure(Exception("Empty response body"))
-
-            val sessions = json.decodeFromString<List<Session>>(body)
-            Result.success(sessions)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -95,20 +101,21 @@ class ApiService @Inject constructor(
         try {
             val request = Request.Builder()
                 .url("$baseUrl/projects/$projectId/sessions/$sessionId/history")
+                .header("X-API-Key", apiKey)
                 .get()
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
+            okHttpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    return@withContext Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
+                }
 
-            if (!response.isSuccessful) {
-                return@withContext Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
+                val body = response.body?.string()
+                    ?: return@withContext Result.failure(Exception("Empty response body"))
+
+                val history = json.decodeFromString<List<HistoryMessage>>(body)
+                Result.success(history)
             }
-
-            val body = response.body?.string()
-                ?: return@withContext Result.failure(Exception("Empty response body"))
-
-            val history = json.decodeFromString<List<HistoryMessage>>(body)
-            Result.success(history)
         } catch (e: Exception) {
             Result.failure(e)
         }

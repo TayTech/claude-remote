@@ -20,6 +20,9 @@ build/
 *.local
 local.properties
 
+# API Key (generated on first run)
+backend/.remote-cli-key
+
 # IDE
 .idea/
 *.iml

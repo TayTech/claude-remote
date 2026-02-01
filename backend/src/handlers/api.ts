@@ -32,7 +32,7 @@ router.get('/health', (_req: Request, res: Response) => {
 router.get(
   '/projects',
   asyncHandler(async (_req: Request, res: Response) => {
-    const projects = listProjects();
+    const projects = await listProjects();
     res.json(projects);
   })
 );
@@ -48,13 +48,13 @@ router.get(
       return;
     }
 
-    const project = getProject(id);
+    const project = await getProject(id);
     if (!project) {
       res.status(404).json({ error: 'Project not found' });
       return;
     }
 
-    const sessions = getSessionsForProject(project.path);
+    const sessions = await getSessionsForProject(project.path);
     res.json(sessions);
   })
 );
@@ -80,13 +80,13 @@ router.get(
       return;
     }
 
-    const project = getProject(id);
+    const project = await getProject(id);
     if (!project) {
       res.status(404).json({ error: 'Project not found' });
       return;
     }
 
-    const history = getSessionHistory(project.path, sessionId);
+    const history = await getSessionHistory(project.path, sessionId);
     res.json(history);
   })
 );

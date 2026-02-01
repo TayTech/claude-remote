@@ -21,8 +21,13 @@ import type {
 
 // Configuration
 const MAX_COMMAND_LENGTH = 10000;
+const MAX_PTY_INPUT_LENGTH = 1048576; // 1MB max for PTY input
 const MAX_CONCURRENT_EXECUTIONS = 20;
 const CANCELLED_EXECUTION_TTL_MS = 60000; // 1 minute
+const MIN_TERMINAL_COLS = 10;
+const MAX_TERMINAL_COLS = 500;
+const MIN_TERMINAL_ROWS = 5;
+const MAX_TERMINAL_ROWS = 200;
 
 // Track active executions
 const activeExecutions = new Map<string, { execution: ClaudeExecution; context: ExecutionContext }>();
@@ -73,7 +78,7 @@ export function registerSocketHandlers(io: Server): void {
     // Handle send-command
     socket.on(
       'send-command',
-      (payload: SendCommandPayload, ack: (response: SendCommandAck) => void) => {
+      async (payload: SendCommandPayload, ack: (response: SendCommandAck) => void) => {
         const { projectId, sessionId, command, correlationId } = payload;
         const executionId = uuidv4();
 
@@ -113,7 +118,7 @@ export function registerSocketHandlers(io: Server): void {
         }
 
         // Validate project
-        const project = getProject(projectId);
+        const project = await getProject(projectId);
         if (!project) {
           ack({
             success: false,
@@ -231,6 +236,17 @@ export function registerSocketHandlers(io: Server): void {
       (payload: PtyInputPayload, ack: (response: PtyInputAck) => void) => {
         const { executionId, data } = payload;
 
+        // Validate input length
+        if (!data || typeof data !== 'string') {
+          ack({ success: false, error: 'Invalid input data' });
+          return;
+        }
+
+        if (data.length > MAX_PTY_INPUT_LENGTH) {
+          ack({ success: false, error: `Input exceeds maximum length of ${MAX_PTY_INPUT_LENGTH} bytes` });
+          return;
+        }
+
         const active = activeExecutions.get(executionId);
         if (!active) {
           ack({ success: false, error: 'Execution not found' });
@@ -252,6 +268,22 @@ export function registerSocketHandlers(io: Server): void {
       (payload: PtyResizePayload, ack: (response: PtyResizeAck) => void) => {
         const { executionId, cols, rows } = payload;
 
+        // Validate terminal dimensions
+        if (typeof cols !== 'number' || typeof rows !== 'number') {
+          ack({ success: false, error: 'Invalid terminal dimensions' });
+          return;
+        }
+
+        if (cols < MIN_TERMINAL_COLS || cols > MAX_TERMINAL_COLS) {
+          ack({ success: false, error: `Cols must be between ${MIN_TERMINAL_COLS} and ${MAX_TERMINAL_COLS}` });
+          return;
+        }
+
+        if (rows < MIN_TERMINAL_ROWS || rows > MAX_TERMINAL_ROWS) {
+          ack({ success: false, error: `Rows must be between ${MIN_TERMINAL_ROWS} and ${MAX_TERMINAL_ROWS}` });
+          return;
+        }
+
         const active = activeExecutions.get(executionId);
         if (!active) {
           ack({ success: false, error: 'Execution not found' });
@@ -270,12 +302,12 @@ export function registerSocketHandlers(io: Server): void {
     // Handle start-pty - start interactive Claude CLI session
     socket.on(
       'start-pty',
-      (payload: StartPtyPayload, ack: (response: StartPtyAck) => void) => {
+      async (payload: StartPtyPayload, ack: (response: StartPtyAck) => void) => {
         const { projectId, sessionId, cols, rows } = payload;
         const executionId = uuidv4();
 
         // Validate project
-        const project = getProject(projectId);
+        const project = await getProject(projectId);
         if (!project) {
           ack({
             success: false,

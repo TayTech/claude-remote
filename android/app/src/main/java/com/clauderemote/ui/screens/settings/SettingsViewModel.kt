@@ -27,6 +27,7 @@ class SettingsViewModel @Inject constructor(
         private const val MIN_PORT = 1
         private const val MAX_PORT = 65535
         const val ERROR_EMPTY_HOST = "Enter server address"
+        const val ERROR_EMPTY_API_KEY = "Enter API key"
         const val ERROR_INVALID_PORT = "Invalid port (must be 1-65535)"
         const val ERROR_CLAUDE_NOT_INSTALLED = "Claude CLI not installed on server"
         const val ERROR_CONNECTION_FAILED = "Connection failed"
@@ -42,8 +43,11 @@ class SettingsViewModel @Inject constructor(
     private val _host = MutableStateFlow("")
     val host: StateFlow<String> = _host.asStateFlow()
 
-    private val _port = MutableStateFlow("3000")
+    private val _port = MutableStateFlow("3190")
     val port: StateFlow<String> = _port.asStateFlow()
+
+    private val _apiKey = MutableStateFlow("")
+    val apiKey: StateFlow<String> = _apiKey.asStateFlow()
 
     private val _testState = MutableStateFlow<TestConnectionState>(TestConnectionState.Idle)
     val testState: StateFlow<TestConnectionState> = _testState.asStateFlow()
@@ -62,6 +66,7 @@ class SettingsViewModel @Inject constructor(
                 if (serverSettings != null) {
                     _host.value = serverSettings.host
                     _port.value = serverSettings.port.toString()
+                    _apiKey.value = serverSettings.apiKey
                 }
                 _isLoading.value = false
             }
@@ -80,12 +85,24 @@ class SettingsViewModel @Inject constructor(
         _saveError.value = null
     }
 
+    fun updateApiKey(value: String) {
+        _apiKey.value = value
+        _testState.value = TestConnectionState.Idle
+        _saveError.value = null
+    }
+
     fun testConnection() {
         val hostValue = _host.value.trim()
-        val portValue = _port.value.toIntOrNull() ?: 3000
+        val portValue = _port.value.toIntOrNull() ?: 3190
+        val apiKeyValue = _apiKey.value.trim()
 
         if (hostValue.isEmpty()) {
             _testState.value = TestConnectionState.Error(ERROR_EMPTY_HOST)
+            return
+        }
+
+        if (apiKeyValue.isEmpty()) {
+            _testState.value = TestConnectionState.Error(ERROR_EMPTY_API_KEY)
             return
         }
 
@@ -98,7 +115,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             _testState.value = TestConnectionState.Testing
 
-            val result = repository.testConnection(hostValue, portValue)
+            val result = repository.testConnection(hostValue, portValue, apiKeyValue)
             _testState.value = result.fold(
                 onSuccess = { health ->
                     if (health.claudeCliInstalled) {
@@ -116,10 +133,16 @@ class SettingsViewModel @Inject constructor(
 
     fun saveSettings(onSuccess: () -> Unit) {
         val hostValue = _host.value.trim()
-        val portValue = _port.value.toIntOrNull() ?: 3000
+        val portValue = _port.value.toIntOrNull() ?: 3190
+        val apiKeyValue = _apiKey.value.trim()
 
         if (hostValue.isEmpty()) {
             _saveError.value = ERROR_EMPTY_HOST
+            return
+        }
+
+        if (apiKeyValue.isEmpty()) {
+            _saveError.value = ERROR_EMPTY_API_KEY
             return
         }
 
@@ -131,7 +154,7 @@ class SettingsViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                repository.saveServerSettings(hostValue, portValue)
+                repository.saveServerSettings(hostValue, portValue, apiKeyValue)
                 repository.connect()
                 onSuccess()
             } catch (e: Exception) {
