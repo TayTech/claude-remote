@@ -90,12 +90,83 @@ On first launch:
 3. Tap "Test Connection" - should show "Connected"
 4. Tap "Save"
 
+## Building an Installable APK
+
+### Debug APK (simplest, for personal use)
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+The APK will be at: `android/app/build/outputs/apk/debug/app-debug.apk`
+
+### Release APK (signed, for distribution)
+
+1. **Create a keystore** (only once):
+   ```bash
+   keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias
+   ```
+
+2. **Configure signing** in `android/app/build.gradle.kts`:
+   ```kotlin
+   android {
+       signingConfigs {
+           create("release") {
+               storeFile = file("my-release-key.jks")
+               storePassword = "your-password"
+               keyAlias = "my-key-alias"
+               keyPassword = "your-password"
+           }
+       }
+       buildTypes {
+           release {
+               signingConfig = signingConfigs.getByName("release")
+               isMinifyEnabled = true
+           }
+       }
+   }
+   ```
+
+3. **Build**:
+   ```bash
+   ./gradlew assembleRelease
+   ```
+
+The APK will be at: `android/app/build/outputs/apk/release/app-release.apk`
+
+### Installing the APK
+
+**Via ADB** (with USB debugging enabled):
+```bash
+adb install app-debug.apk
+```
+
+**Manually**: Transfer the APK to your phone and open it. You'll need to enable "Install from unknown sources" in your device settings.
+
 ## Usage
 
 1. **Projects**: List of automatically discovered projects
 2. **Sessions**: Claude session history per project
 3. **Terminal**: Send commands to Claude CLI with full terminal emulation
 4. **Browser**: Preview dev server *(work in progress)*
+
+## Terminal Control Bar
+
+The terminal screen includes a control bar with special keys for mobile-friendly interaction:
+
+| Button | Function | Description |
+|--------|----------|-------------|
+| ← | Arrow Left | Move cursor left in the input line |
+| ↑ | Arrow Up | Navigate command history (previous) |
+| ↓ | Arrow Down | Navigate command history (next) |
+| → | Arrow Right | Move cursor right in the input line |
+| Tab | Tab | Trigger autocompletion |
+| Esc | Escape | Cancel current operation or exit prompts |
+| 🚫 | Ctrl+C | Interrupt/stop the currently running command |
+| ⏎ INVIO | Enter | Submit the current input |
+
+**Note**: Arrow Up/Down, Tab, Esc, and 🚫 are only active when a command is running. Arrow Left/Right and Enter are always available.
 
 ## Important Notes
 

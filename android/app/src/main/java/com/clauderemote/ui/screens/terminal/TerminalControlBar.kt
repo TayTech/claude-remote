@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -67,17 +68,16 @@ fun TerminalControlBar(
             ControlButton(text = "→", onClick = onArrowRight, enabled = true)
 
             // Tab - only when command running
-            ControlButton(text = "Tab", onClick = onTab, enabled = enabled)
+            ControlButton(text = "Tab", onClick = onTab, enabled = enabled, width = 52.dp)
 
             // Escape - only when command running
-            ControlButton(text = "Esc", onClick = onEsc, enabled = enabled)
+            ControlButton(text = "Esc", onClick = onEsc, enabled = enabled, width = 52.dp)
 
             // Ctrl+C - only when command running
             ControlButton(
-                text = "^C",
+                text = "🚫",
                 onClick = onCtrlC,
-                enabled = enabled,
-                backgroundColor = if (enabled) Color(0xFF8B0000) else Color(0xFF4A2020)
+                enabled = enabled
             )
         }
 
@@ -121,7 +121,8 @@ private fun ControlButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    backgroundColor: Color = Color(0xFF404040)
+    backgroundColor: Color = Color(0xFF404040),
+    width: Dp = 48.dp
 ) {
     val actualBackgroundColor = if (enabled) backgroundColor else Color(0xFF2A2A2A)
     val textColor = if (enabled) Color.White else Color(0xFF666666)
@@ -129,7 +130,7 @@ private fun ControlButton(
     Button(
         onClick = onClick,
         modifier = modifier
-            .size(width = 48.dp, height = 44.dp),
+            .size(width = width, height = 44.dp),
         shape = RoundedCornerShape(6.dp),
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
