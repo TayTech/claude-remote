@@ -3,60 +3,60 @@
     <string name="app_name">Claude Remote</string>
 
     <!-- Settings -->
-    <string name="settings_title">Impostazioni</string>
-    <string name="settings_server_section">Configurazione Server</string>
-    <string name="settings_host_label">Indirizzo Tailscale</string>
-    <string name="settings_host_hint">Hostname Tailscale del tuo Mac</string>
-    <string name="settings_port_label">Porta</string>
-    <string name="settings_test_connection">Testa Connessione</string>
-    <string name="settings_save">Salva</string>
-    <string name="settings_cancel">Annulla</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_server_section">Server Configuration</string>
+    <string name="settings_host_label">Tailscale Address</string>
+    <string name="settings_host_hint">Your Mac\'s Tailscale hostname</string>
+    <string name="settings_port_label">Port</string>
+    <string name="settings_test_connection">Test Connection</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_cancel">Cancel</string>
 
     <!-- Connection Status -->
-    <string name="connection_success">Connessione riuscita</string>
-    <string name="connection_failed">Connessione fallita</string>
-    <string name="connecting">Connessione in corso...</string>
-    <string name="connected">Connesso</string>
-    <string name="disconnected">Disconnesso</string>
-    <string name="reconnecting">Riconnessione in corso (tentativo %1$d)...</string>
+    <string name="connection_success">Connection successful</string>
+    <string name="connection_failed">Connection failed</string>
+    <string name="connecting">Connecting...</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="reconnecting">Reconnecting (attempt %1$d)...</string>
 
     <!-- Projects -->
-    <string name="projects_title">Progetti</string>
-    <string name="projects_empty">Nessun progetto configurato</string>
-    <string name="projects_loading">Caricamento progetti...</string>
-    <string name="projects_error">Errore nel caricamento dei progetti</string>
-    <string name="dev_server_port">Porta dev: %1$d</string>
+    <string name="projects_title">Projects</string>
+    <string name="projects_empty">No projects configured</string>
+    <string name="projects_loading">Loading projects...</string>
+    <string name="projects_error">Error loading projects</string>
+    <string name="dev_server_port">Dev port: %1$d</string>
 
     <!-- Sessions -->
-    <string name="sessions_title">Sessioni</string>
-    <string name="sessions_empty">Nessuna sessione trovata</string>
-    <string name="sessions_loading">Caricamento sessioni...</string>
-    <string name="sessions_error">Errore nel caricamento delle sessioni</string>
-    <string name="sessions_new">Nuova Sessione</string>
-    <string name="messages_count">%1$d messaggi</string>
+    <string name="sessions_title">Sessions</string>
+    <string name="sessions_empty">No sessions found</string>
+    <string name="sessions_loading">Loading sessions...</string>
+    <string name="sessions_error">Error loading sessions</string>
+    <string name="sessions_new">New Session</string>
+    <string name="messages_count">%1$d messages</string>
 
     <!-- Terminal -->
-    <string name="terminal_title">Terminale</string>
-    <string name="terminal_input_hint">Scrivi un comando...</string>
-    <string name="terminal_send">Invia</string>
+    <string name="terminal_title">Terminal</string>
+    <string name="terminal_input_hint">Type a command...</string>
+    <string name="terminal_send">Send</string>
     <string name="terminal_browser">Browser</string>
-    <string name="terminal_back">Indietro</string>
-    <string name="terminal_new_session">Nuova sessione</string>
+    <string name="terminal_back">Back</string>
+    <string name="terminal_new_session">New session</string>
 
     <!-- Errors -->
-    <string name="error_session_not_found">Sessione non trovata</string>
-    <string name="error_command_failed">Comando fallito</string>
-    <string name="error_timeout">Timeout della richiesta</string>
-    <string name="error_cancelled">Comando annullato</string>
-    <string name="error_server_not_configured">Server non configurato</string>
-    <string name="error_not_connected">Non connesso al server</string>
-    <string name="error_generic">Si e\' verificato un errore</string>
+    <string name="error_session_not_found">Session not found</string>
+    <string name="error_command_failed">Command failed</string>
+    <string name="error_timeout">Request timeout</string>
+    <string name="error_cancelled">Command cancelled</string>
+    <string name="error_server_not_configured">Server not configured</string>
+    <string name="error_not_connected">Not connected to server</string>
+    <string name="error_generic">An error occurred</string>
 
     <!-- Service -->
-    <string name="service_channel_name">Connessione Claude Remote</string>
+    <string name="service_channel_name">Claude Remote Connection</string>
     <string name="service_notification_title">Claude Remote</string>
-    <string name="service_connected_to">Connesso a %1$s</string>
-    <string name="service_disconnected">Disconnesso</string>
-    <string name="service_reconnecting">Riconnessione...</string>
-    <string name="service_disconnect_action">Disconnetti</string>
+    <string name="service_connected_to">Connected to %1$s</string>
+    <string name="service_disconnected">Disconnected</string>
+    <string name="service_reconnecting">Reconnecting...</string>
+    <string name="service_disconnect_action">Disconnect</string>
 </resources>

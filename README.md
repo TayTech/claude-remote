@@ -164,7 +164,7 @@ The terminal screen includes a control bar with special keys for mobile-friendly
 | Tab | Tab | Trigger autocompletion |
 | Esc | Escape | Cancel current operation or exit prompts |
 | 🚫 | Ctrl+C | Interrupt/stop the currently running command (tap twice to go back to sessions) |
-| ⏎ INVIO | Enter | Submit the current input |
+| ⏎ ENTER | Enter | Submit the current input |
 
 **Note**: Arrow Up/Down, Tab, Esc, and 🚫 are only active when a command is running. Arrow Left/Right and Enter are always available.
 

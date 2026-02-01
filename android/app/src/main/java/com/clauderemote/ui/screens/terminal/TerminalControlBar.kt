@@ -104,7 +104,7 @@ fun TerminalControlBar(
                 )
             ) {
                 Text(
-                    text = "⏎  INVIO",
+                    text = "⏎  ENTER",
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,

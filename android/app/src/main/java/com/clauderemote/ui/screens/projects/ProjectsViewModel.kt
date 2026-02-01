@@ -49,7 +49,7 @@ class ProjectsViewModel @Inject constructor(
             val result = repository.getProjects()
             _uiState.value = result.fold(
                 onSuccess = { projects -> ProjectsUiState.Success(projects) },
-                onFailure = { error -> ProjectsUiState.Error(error.message ?: "Errore sconosciuto") }
+                onFailure = { error -> ProjectsUiState.Error(error.message ?: "Unknown error") }
             )
         }
     }
@@ -60,7 +60,7 @@ class ProjectsViewModel @Inject constructor(
             val result = repository.getProjects()
             _uiState.value = result.fold(
                 onSuccess = { projects -> ProjectsUiState.Success(projects) },
-                onFailure = { error -> ProjectsUiState.Error(error.message ?: "Errore sconosciuto") }
+                onFailure = { error -> ProjectsUiState.Error(error.message ?: "Unknown error") }
             )
             _isRefreshing.value = false
         }
