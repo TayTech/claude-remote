@@ -36,7 +36,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,6 +60,9 @@ fun TerminalScreen(
     val serverHost by viewModel.serverHost.collectAsState()
     val terminalSession by viewModel.terminalSession.collectAsState()
     val isCommandRunning by viewModel.isCommandRunning.collectAsState()
+
+    // Track last Ctrl+C press time for double-tap to exit
+    var lastCtrlCTime by remember { mutableLongStateOf(0L) }
 
     Scaffold(
         topBar = {
@@ -135,7 +140,17 @@ fun TerminalScreen(
             onArrowRight = { viewModel.sendTerminalInput("\u001B[C") },
             onTab = { viewModel.sendTerminalInput("\t") },
             onEsc = { viewModel.sendTerminalInput("\u001B") },
-            onCtrlC = { viewModel.sendTerminalInput("\u0003") },
+            onCtrlC = {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastCtrlCTime < 1000) {
+                    // Double tap within 1 second - go back to sessions
+                    onBack()
+                } else {
+                    // First tap - send Ctrl+C
+                    viewModel.sendTerminalInput("\u0003")
+                    lastCtrlCTime = currentTime
+                }
+            },
             onEnter = { viewModel.sendTerminalInput("\r") },
             enabled = isCommandRunning,
             modifier = Modifier.fillMaxWidth()
@@ -224,6 +239,8 @@ private fun BrowserView(
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
                 webViewClient = object : WebViewClient() {
+                    @Suppress("DEPRECATION")
+                    @Deprecated("Deprecated in Java")
                     override fun onReceivedError(
                         view: WebView?,
                         errorCode: Int,
