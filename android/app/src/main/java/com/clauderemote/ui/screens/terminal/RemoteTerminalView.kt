@@ -15,6 +15,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import android.widget.OverScroller
+import androidx.core.view.ViewCompat
 import com.termux.terminal.TerminalEmulator
 import kotlin.math.max
 import kotlin.math.min
@@ -77,15 +78,17 @@ class RemoteTerminalView @JvmOverloads constructor(
         0xFFFFFFFF.toInt()  // 15: Bright White
     )
 
-    // Scrolling
-    private var topRow: Int = 0
-    private val scroller = OverScroller(context)
-    private var lastTouchY: Float = 0f
+    // Scrolling - pixel-based for smooth scrolling
+    private var scrollYPixels: Int = 0
+    private val scroller = OverScroller(context).apply {
+        setFriction(0.015f) // Lower friction for smoother deceleration
+    }
 
     // Gesture detector for scrolling and taps
     private val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent): Boolean {
-            // Must return true for other gestures to work
+            // Stop any ongoing fling
+            scroller.forceFinished(true)
             return true
         }
 
@@ -97,7 +100,7 @@ class RemoteTerminalView @JvmOverloads constructor(
         }
 
         override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
-            doScroll(distanceY.toInt())
+            doScrollPixels(distanceY.toInt())
             return true
         }
 
@@ -106,9 +109,18 @@ class RemoteTerminalView @JvmOverloads constructor(
             val maxScrollBack = em.screen.activeTranscriptRows
             val totalRows = em.mRows
             val visibleRows = getVisibleRows()
-            val maxTopRow = max(0, totalRows - visibleRows)
-            scroller.fling(0, topRow, 0, (-velocityY / fontLineSpacing).toInt(), 0, 0, -maxScrollBack, maxTopRow)
-            invalidate()
+
+            // Calculate scroll bounds in pixels
+            val minScrollY = -maxScrollBack * fontLineSpacing
+            val maxScrollY = max(0, (totalRows - visibleRows) * fontLineSpacing)
+
+            scroller.fling(
+                0, scrollYPixels,
+                0, -velocityY.toInt(),
+                0, 0,
+                minScrollY, maxScrollY
+            )
+            ViewCompat.postInvalidateOnAnimation(this@RemoteTerminalView)
             return true
         }
     })
@@ -116,6 +128,10 @@ class RemoteTerminalView @JvmOverloads constructor(
     init {
         isFocusable = true
         isFocusableInTouchMode = true
+        // Enable hardware acceleration for smoother rendering
+        setLayerType(LAYER_TYPE_HARDWARE, null)
+        // Optimize for scrolling
+        isVerticalScrollBarEnabled = false
         updateFontMetrics()
     }
 
@@ -143,7 +159,7 @@ class RemoteTerminalView @JvmOverloads constructor(
      */
     fun attachEmulator(emulator: TerminalEmulator) {
         this.emulator = emulator
-        topRow = 0
+        scrollYPixels = 0
         invalidate()
     }
 
@@ -156,26 +172,29 @@ class RemoteTerminalView @JvmOverloads constructor(
         val cursorRow = em.cursorRow
         val visibleRows = getVisibleRows()
         val totalRows = em.mRows
+        val topRow = getTopRowFromScroll()
 
         Log.d(TAG, "onScreenUpdated: cursor=$cursorRow, topRow=$topRow, visibleRows=$visibleRows, totalRows=$totalRows")
 
         // Calculate proper scroll position to keep cursor visible
-        // topRow is the first row to display (0 = first row of active screen, negative = transcript)
-        // cursorRow is relative to active screen (0 to mRows-1)
+        var newTopRow = topRow
 
         // If cursor is above visible area, scroll up
         if (cursorRow < topRow) {
-            topRow = cursorRow
+            newTopRow = cursorRow
         }
         // If cursor is below visible area, scroll down
         else if (cursorRow >= topRow + visibleRows) {
-            topRow = cursorRow - visibleRows + 1
+            newTopRow = cursorRow - visibleRows + 1
         }
 
         // Keep topRow in valid range
         val maxScrollBack = em.screen.activeTranscriptRows
-        val maxTopRow = max(0, totalRows - visibleRows) // Can't scroll past last row
-        topRow = topRow.coerceIn(-maxScrollBack, maxTopRow)
+        val maxTopRow = max(0, totalRows - visibleRows)
+        newTopRow = newTopRow.coerceIn(-maxScrollBack, maxTopRow)
+
+        // Convert back to pixels
+        scrollYPixels = newTopRow * fontLineSpacing
 
         invalidate()
     }
@@ -217,15 +236,28 @@ class RemoteTerminalView @JvmOverloads constructor(
         } else 24
     }
 
-    private fun doScroll(deltaY: Int) {
+    private fun doScrollPixels(deltaY: Int) {
         val em = emulator ?: return
-        val rowDelta = deltaY / fontLineSpacing.coerceAtLeast(1)
         val maxScrollBack = em.screen.activeTranscriptRows
         val totalRows = em.mRows
         val visibleRows = getVisibleRows()
-        val maxTopRow = max(0, totalRows - visibleRows) // Can't scroll past last row
-        topRow = (topRow + rowDelta).coerceIn(-maxScrollBack, maxTopRow)
-        invalidate()
+
+        // Calculate scroll bounds in pixels
+        val minScrollY = -maxScrollBack * fontLineSpacing
+        val maxScrollY = max(0, (totalRows - visibleRows) * fontLineSpacing)
+
+        scrollYPixels = (scrollYPixels + deltaY).coerceIn(minScrollY, maxScrollY)
+        ViewCompat.postInvalidateOnAnimation(this)
+    }
+
+    // Helper to get topRow from pixel scroll position
+    private fun getTopRowFromScroll(): Int {
+        return if (fontLineSpacing > 0) scrollYPixels / fontLineSpacing else 0
+    }
+
+    // Helper to get pixel offset within current row
+    private fun getScrollPixelOffset(): Int {
+        return if (fontLineSpacing > 0) scrollYPixels % fontLineSpacing else 0
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -237,20 +269,25 @@ class RemoteTerminalView @JvmOverloads constructor(
         val em = emulator ?: return
         val screen = em.screen
 
-        val visibleRows = getVisibleRows()
+        val visibleRows = getVisibleRows() + 1 // +1 for partial row at bottom
         val visibleCols = getVisibleColumns()
         val totalRows = em.mRows
+
+        // Calculate row offset from pixel scroll
+        val topRow = getTopRowFromScroll()
+        val pixelOffset = getScrollPixelOffset()
 
         // Track the last row with '>' for cursor positioning
         var lastPromptRow = -1
         var isPromptReset = false
 
         // Draw each visible row with proper styling
-        for (viewRow in 0 until min(visibleRows, totalRows)) {
+        for (viewRow in 0 until min(visibleRows, totalRows + 1)) {
             val emulatorRow = topRow + viewRow
             if (emulatorRow < -screen.activeTranscriptRows || emulatorRow >= totalRows) continue
 
-            val y = fontAscent + viewRow * fontLineSpacing
+            // Apply pixel offset for smooth scrolling
+            val y = fontAscent + viewRow * fontLineSpacing - pixelOffset
 
             // Get the line text
             val lineText = try {
@@ -327,9 +364,8 @@ class RemoteTerminalView @JvmOverloads constructor(
 
             // Cursor at the end of the text (after last non-space character)
             val cursorCol = promptLineText.trimEnd().length
-            // lineText.indexOf('❯') + 1
             var cursorX = cursorCol * fontWidth
-            val cursorY = lastPromptRow * fontLineSpacing
+            val cursorY = lastPromptRow * fontLineSpacing - pixelOffset
 
             // Draw cursor block with light gray color
             if(isPromptReset) {
@@ -370,13 +406,20 @@ class RemoteTerminalView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        return gestureDetector.onTouchEvent(event) || super.onTouchEvent(event)
+        val handled = gestureDetector.onTouchEvent(event)
+        // Ensure we continue receiving events during gestures
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            parent?.requestDisallowInterceptTouchEvent(true)
+        } else if (event.action == MotionEvent.ACTION_UP || event.action == MotionEvent.ACTION_CANCEL) {
+            parent?.requestDisallowInterceptTouchEvent(false)
+        }
+        return handled || super.onTouchEvent(event)
     }
 
     override fun computeScroll() {
         if (scroller.computeScrollOffset()) {
-            topRow = scroller.currY
-            invalidate()
+            scrollYPixels = scroller.currY
+            ViewCompat.postInvalidateOnAnimation(this)
         }
     }
 
