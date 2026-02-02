@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>RemoteCli - Intro</title>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600&display=swap');
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box
+      }
+
+      html, body {
+        width: 100%;
+        height: 100%;
+        background: #0a1628;
+        overflow: hidden
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0
+      }
+
+      .intro-container {
+        width: min(400px, 90vw);
+        height: auto;
+        aspect-ratio: 400 / 320;
+        position: relative
+      }
+
+      svg {
+        width: 100%;
+        height: 100%
+      }
+
+      .panel-back {
+        opacity: 0;
+        transform: translate(100px, -50px);
+        animation: slideInPanel .6s ease-out .3s forwards
+      }
+
+      .trapezoid {
+        opacity: 0;
+        transform: translate(-80px, 30px) rotate(-15deg);
+        animation: slideInTrapezoid .7s ease-out .5s forwards
+      }
+
+      .center-line {
+        opacity: 0;
+        transform: scaleY(0);
+        transform-origin: center;
+        animation: growLine .5s ease-out .9s forwards
+      }
+
+      .cone-base {
+        opacity: 0;
+        transform: translate(40px, 40px) scale(0);
+        animation: popCone .4s cubic-bezier(.175, .885, .32, 1.275) 1.2s forwards
+      }
+
+      .cone-body {
+        opacity: 0;
+        transform: translate(40px, 40px) scale(0);
+        animation: popCone .4s cubic-bezier(.175, .885, .32, 1.275) 1.3s forwards
+      }
+      
+      /* Animazione onde pulsanti dal cono verso l'esterno */
+
+      .wave1 {
+        opacity: 0;
+        stroke-dashoffset: 100;
+        animation: drawWave .5s ease-out 1.6s forwards
+      }
+
+      .wave2 {
+        opacity: 0;
+        stroke-dashoffset: 120;
+        animation: drawWave .5s ease-out 1.8s forwards
+      }
+
+      .wave3 {
+        opacity: 0;
+        stroke-dashoffset: 140;
+        animation: drawWave .5s ease-out 2s forwards
+      }
+
+      .glow-effect {
+        filter: drop-shadow(0 0 0 rgba(0, 217, 255, 0));
+        animation: addGlow .8s ease-out 4s forwards
+      }
+
+      .wave1.assembled {
+        animation: pulse 2s ease-in-out infinite
+      }
+
+      .wave2.assembled {
+        animation: pulse 2s ease-in-out 0.25s infinite
+      }
+
+      .wave3.assembled {
+        animation: pulse 2s ease-in-out 0.5s infinite
+      }
+      
+      @keyframes slideInPanel {
+        0% {
+          opacity: 0;
+          transform: translate(100px, -50px)
+        }
+
+        100% {
+          opacity: 1;
+          transform: translate(0, 0)
+        }
+      }
+
+      @keyframes slideInTrapezoid {
+        0% {
+          opacity: 0;
+          transform: translate(-80px, 30px) rotate(-15deg)
+        }
+
+        100% {
+          opacity: 1;
+          transform: translate(0, 0) rotate(0)
+        }
+      }
+
+      @keyframes growLine {
+        0% {
+          opacity: 0;
+          transform: scaleY(0)
+        }
+
+        100% {
+          opacity: 1;
+          transform: scaleY(1)
+        }
+      }
+
+      @keyframes popCone {
+        0% {
+          opacity: 0;
+          transform: translate(40px, 40px) scale(0)
+        }
+
+        100% {
+          opacity: 1;
+          transform: translate(0, 0) scale(1)
+        }
+      }
+
+      @keyframes drawWave {
+        0% {
+          opacity: 0;
+          stroke-dashoffset: 100
+        }
+
+        50% {
+          opacity: 1
+        }
+
+        100% {
+          opacity: 1;
+          stroke-dashoffset: 0
+        }
+      }
+
+      @keyframes fadeUpText { 
+        0% {
+          opacity: 0;
+          transform: translateY(20px)
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0)
+        }
+      }
+
+      @keyframes addGlow {
+        0% {
+          filter: drop-shadow(0 0 0 rgba(0, 217, 255, 0))
+        }
+
+        100% {
+          filter: drop-shadow(0 0 8px rgba(0, 217, 255, .6))
+        }
+      }
+
+      @keyframes pulse {
+
+        0%,
+        100% {
+          opacity: .3
+        }
+
+        50% {
+          opacity: 1
+        }
+      }
+
+      .particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none
+      }
+
+      .particle {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: #00d9ff;
+        border-radius: 50%;
+        opacity: 0;
+        animation: floatParticle 3s ease-in-out infinite
+      }
+      
+      .brand-text {
+        opacity: 0;
+        font-family: Rajdhani, sans-serif;
+        font-weight: 500;
+        letter-spacing: 8px;
+        transform: translateY(20px);
+        animation: fadeUpText .6s ease-out 2.5s forwards
+      }
+
+      .slogan-line1 {
+        opacity: 0;
+        font-family: Rajdhani, sans-serif;
+        transform: translateY(15px);
+        animation: fadeUpText .5s ease-out 3.2s forwards
+      }
+
+      .slogan-line2 {
+        opacity: 0;
+        font-family: Rajdhani, sans-serif;
+        transform: translateY(15px);
+        animation: fadeUpText .5s ease-out 3.5s forwards
+      }
+
+      @keyframes floatParticle {
+
+        0%,
+        100% {
+          opacity: 0;
+          transform: translateY(0) scale(0)
+        }
+
+        50% {
+          opacity: .6;
+          transform: translateY(-30px) scale(1)
+        }
+      }
+      
+      /* SWIPE UP */
+      .mySwipe {
+          animation: swipeUp .4s ease-out 5s forwards;
+        }
+
+        @keyframes swipeUp {
+          0% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-100vh);
+          }
+        }
+    </style>
+  </head>
+  <body>
+    <div class="intro-container mySwipe">
+      <div class="particles" id="particles"></div>
+      <svg width="400" height="320" viewBox="0 0 400 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="clip0_5_2">
+            <rect width="400" height="320" fill="white" />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#clip0_5_2)">
+          <rect width="400" height="320" rx="12" fill="#0A1628" />
+          <g class="glow-effect">
+            <path class="panel-back" d="M215 80H225V140H215" stroke="#00D9FF" stroke-width="3" />
+            <path class="trapezoid" d="M155 80V140L210 160V60L155 80Z" stroke="#00D9FF" stroke-width="3" />
+            <path class="center-line" d="M174 73V147" stroke="#00D9FF" stroke-width="3" />
+            <path class="cone-base" d="M200.993 145.894C197.33 148.364 195.613 152.223 197.157 154.513C198.701 156.802 202.922 156.655 206.585 154.184C210.248 151.714 211.965 147.855 210.421 145.565C208.877 143.276 204.656 143.423 200.993 145.894Z" fill="#00D9FF" />
+            <path class="cone-body" d="M210.421 145.565L197.157 154.513L211.618 161.646L210.421 145.565Z" fill="#00D9FF" />
+            <path class="wave1" d="M208.5 136C199.353 135.18 192.5 140 189.5 151.5" stroke="#00D9FF" stroke-width="4" stroke-linecap="round" />
+            <path class="wave2" d="M209 126.5C194.12 125.361 184.5 132 181.062 148.419" stroke="#00D9FF" stroke-width="4" stroke-linecap="round" />
+            <path class="wave3" d="M208.474 117.302C187.893 114.555 175.641 123.539 174.5 146" stroke="#00D9FF" stroke-width="4" stroke-linecap="round" />
+          </g>
+          <text x="200" y="205" text-anchor="middle" class="brand-text" fill="#00D9FF" font-size="27">RemoteCLI for Claude</text>
+          <text x="200" y="225" text-anchor="middle" class="slogan-line1" fill="#00D9FF" font-size="11" opacity="0.65">
+            <tspan>Powered by</tspan>
+          </text>
+          <text x="200" y="237" text-anchor="middle" class="slogan-line2" fill="#00D9FF" font-size="11" opacity="0.65">
+            <tspan>SYGNAPTICA®</tspan>
+          </text>
+        </g>
+      </svg>
+    </div>
+    <script>
+      // Genera particelle decorative
+      const particlesContainer = document.getElementById('particles');
+      for (let i = 0; i < 55; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 3 + 's';
+        particlesContainer.appendChild(particle);
+      }
+      // Aggiungi classe assembled alle onde dopo 4.5s per avviare il loop
+      setTimeout(() => {
+        document.querySelectorAll('.wave1, .wave2, .wave3').forEach(wave => {
+            wave.style.opacity = '0.3 !important';
+          wave.classList.add('assembled');
+        });
+      }, 3500);
+    </script>
+  </body>
+</html>

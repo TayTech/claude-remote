@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.ClaudeRemote" parent="android:Theme.Material.NoActionBar">
-        <item name="android:statusBarColor">#1a1a2e</item>
-        <item name="android:navigationBarColor">#1a1a2e</item>
-        <item name="android:windowBackground">#1a1a2e</item>
+        <!-- Use splash background color to avoid flash on startup -->
+        <item name="android:statusBarColor">#0A1628</item>
+        <item name="android:navigationBarColor">#0A1628</item>
+        <item name="android:windowBackground">#0A1628</item>
     </style>
 </resources>

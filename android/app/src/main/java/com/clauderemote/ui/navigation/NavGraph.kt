@@ -16,10 +16,12 @@ import com.clauderemote.ui.screens.sessions.SessionsScreen
 import com.clauderemote.ui.screens.sessions.SessionsViewModel
 import com.clauderemote.ui.screens.settings.SettingsScreen
 import com.clauderemote.ui.screens.settings.SettingsViewModel
+import com.clauderemote.ui.screens.splash.SplashScreen
 import com.clauderemote.ui.screens.terminal.TerminalScreen
 import com.clauderemote.ui.screens.terminal.TerminalViewModel
 
 object Routes {
+    const val SPLASH = "splash"
     const val SETTINGS = "settings"
     const val PROJECTS = "projects"
     const val SESSIONS = "sessions/{projectId}"
@@ -43,12 +45,22 @@ fun ClaudeRemoteNavGraph() {
         return
     }
 
-    val startDestination = if (settings == null) Routes.SETTINGS else Routes.PROJECTS
+    val mainDestination = if (settings == null) Routes.SETTINGS else Routes.PROJECTS
 
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = Routes.SPLASH
     ) {
+        composable(Routes.SPLASH) {
+            SplashScreen(
+                onSplashFinished = {
+                    navController.navigate(mainDestination) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Routes.SETTINGS) {
             val viewModel: SettingsViewModel = hiltViewModel()
             SettingsScreen(
